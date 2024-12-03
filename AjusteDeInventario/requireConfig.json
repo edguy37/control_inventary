@@ -1,0 +1,7 @@
+{
+  "paths" : {
+    "templateBuilder" : "/SuiteScripts/controlinventory/AjusteDeInventario/builder_template.js",    
+    "swal" : "/SuiteScripts/libs/Swal.min.js",
+    "utilitiesString" : "SuiteScripts/libraries/lib_utilitiesString.js"
+  }
+}

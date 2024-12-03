@@ -1,0 +1,7 @@
+{
+    "paths" : {
+      "swal" : "/SuiteScripts/libraries/Swal.min.js",
+      "moment" : "/SuiteScripts/libraries/moment.min.js",
+      "builderConcentrate" : "/SuiteScripts/controlinventory/libraries/template_builder/csv_to_pdf_concentrate.js"
+    }
+  }

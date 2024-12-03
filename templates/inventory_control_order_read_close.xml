@@ -1,0 +1,242 @@
+<?xml version="1.0"?>
+<!DOCTYPE pdf PUBLIC "-//big.faceless.org//report" "report-1.1.dtd">
+<pdf>
+	<head>
+		<macrolist>
+			<macro id="nlfooter">
+				<table style="width: 100%; font-size: 9pt;">
+					<tr>
+						<td align="right" style="padding: 0;">p&aacute;gina <pagenumber/>
+	de <totalpages/>
+					</td>
+				</tr>
+			</table>
+		</macro>
+	</macrolist>
+	<style type="text/css">
+		table{
+			font-family: Arial, Helvetica, sans-serif;
+		}
+		table#header{
+			font-size: 10pt;
+		}
+		table#detail{
+			font-size:9pt;
+		}
+		table#detail tbody{
+			font-size: 7pt;
+		}
+	</style>
+</head>
+<body footer="nlfooter" size="Letter-LANDSCAPE">
+	<table id="header" width="100%">
+		<tbody>
+			<tr>
+				<td colspan="2" align="center">
+					<strong>TIENDAS CHAPUR, S.A. DE C.V</strong>
+				</td>				
+			</tr>
+			<tr>
+				<td colspan="2" align="center">
+					<strong>Inventario Fisico</strong>
+				</td>				
+			</tr>
+			<tr>
+				<td colspan="2" align="center">
+					<strong>
+						${order.location}
+					</strong>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2" align="center">REPORTE DE DIFERENCIAS DEFINITIVAS</td>
+			</tr>
+			<tr>
+				<td colspan="2" align="center"><small>*El reporte solo incluye artículos con diferencias</small></td>
+			</tr>
+			<tr>
+				<td><b>Departamento:</b> ${order.department}</td>
+				<td align="right"><b>Orden:</b> #${order.folio}</td>
+			</tr>
+			<tr>
+				<td><b>Proveedor:</b> ${order.vendor}</td>
+				<td align="right"><b>Fecha:</b> ${order.date}</td>
+			</tr>
+		</tbody>
+	</table>
+	
+	<table id="header" width="100%">
+		<tbody>
+			<tr>
+				<td align="center">
+					<strong>DIFERENCIAS PARA AJUSTAR</strong>
+				</td>
+			</tr>			
+		</tbody>
+	</table>
+
+	<table id="detail" width="100%" cellspacing="2" cellpadding="1">
+		<thead>
+			<tr>
+				<th width="3%" align="center">Numart</th>
+				<th width="3%" align="center">Proveedor</th>
+				<th width="3%" align="center">Modelo</th>
+				<th width="17%" align="center">Descripción</th>
+				<th width="7%" align="center">Precio</th>
+				<th width="5%" align="center">Físico</th>
+				<th width="5%" align="center">Sistema</th>
+				<th width="5%" align="center">Diferencia</th>
+				<th width="9%" align="center">Importe</th>
+				<th width="17%" align="center">Analisis</th>
+				<th width="17%" align="center">Observacion</th>
+			</tr>
+		</thead>
+		<tbody>
+			<#list order.detail_ajust as item>
+			<tr>
+				<td align="left">${item.numart}</td>
+				<td align="left">${item.vendor}</td>
+				<td align="left">${item.model}</td>
+				<td align="left">${item.description?html}</td>
+				<td align="left">$ ${item.base_price}</td>
+				<td align="center">${item.in_store}</td>
+				<td align="center">${item.system}</td>
+				<td align="center">${item.difference}</td>
+				<td align="left">$ ${item.price_amount}</td>
+				<td align="left">${item.analisis}</td>
+				<td align="left">${item.observacion}</td>
+			</tr>
+			</#list>
+			<tr style="border-top: 1pt solid black;">
+				<td align="center"><strong>${order.ajust_totals.total_items}</strong></td>
+				<td align="left"></td>
+				<td align="left"></td>
+				<td align="left"></td>
+				<td align="left"></td>
+				<td align="center"><strong>${order.ajust_totals.total_store}</strong></td>
+				<td align="center"><strong>${order.ajust_totals.total_system}</strong></td>
+				<td align="center"><strong>${order.ajust_totals.total_diff}</strong></td>
+				<td align="left"><strong>$ ${order.ajust_totals.total_amount}</strong></td>
+				<td align="center"></td>
+				<td align="left"></td>
+				<td align="left"></td>
+			</tr>
+		</tbody>
+	</table>
+
+	<table id="header" width="100%">
+		<tbody>
+			<tr>
+				<td align="center">
+				<strong>DIFERENCIAS SEGUIMIENTO</strong>
+				</td>
+			</tr>			
+		</tbody>
+	</table>
+	<table id="detail" width="100%" cellspacing="2" cellpadding="1">
+		<thead>
+			<tr>
+				<th width="3%" align="center">Numart</th>
+				<th width="3%" align="center">Proveedor</th>
+				<th width="3%" align="center">Modelo</th>
+				<th width="17%" align="center">Descripción</th>
+				<th width="7%" align="center">Precio</th>
+				<th width="5%" align="center">Físico</th>
+				<th width="5%" align="center">Sistema</th>
+				<th width="5%" align="center">Diferencia</th>
+				<th width="9%" align="center">Importe</th>
+				<th width="17%" align="center">Analisis</th>
+				<th width="17%" align="center">Observacion</th>
+			</tr>
+		</thead>
+		<tbody>
+			<#list order.detail_fallow as item>
+			<tr>
+				<td align="left">${item.numart}</td>
+				<td align="left">${item.vendor}</td>
+				<td align="left">${item.model}</td>
+				<td align="left">${item.description?html}</td>
+				<td align="left">$ ${item.base_price}</td>
+				<td align="center">${item.in_store}</td>
+				<td align="center">${item.system}</td>
+				<td align="center">${item.difference}</td>
+				<td align="left">$ ${item.price_amount}</td>
+				<td align="left">${item.analisis}</td>
+				<td align="left">${item.observacion}</td>
+			</tr>
+			</#list>
+				<tr style="border-top: 1pt solid black;">
+				<td align="center"><strong>${order.fallow_totals.total_items}</strong></td>
+				<td align="left"></td>
+				<td align="left"></td>
+				<td align="left"></td>
+				<td align="left"></td>
+				<td align="center"><strong>${order.fallow_totals.total_store}</strong></td>
+				<td align="center"><strong>${order.fallow_totals.total_system}</strong></td>
+				<td align="center"><strong>${order.fallow_totals.total_diff}</strong></td>
+				<td align="left"><strong>$ ${order.fallow_totals.total_amount}</strong></td>
+				<td align="center"></td>
+				<td align="left"></td>
+				<td align="left"></td>
+			</tr>
+		</tbody>
+	</table>
+
+
+	<br />
+	<table width="100%">
+		<tr>
+			<td width="50%" align="center">
+				<strong>
+					_________________________________	
+				</strong>
+			</td>
+			<td width="50%" align="center">
+				<strong>
+					_________________________________
+				</strong>
+			</td>
+		</tr>
+		<tr>
+			<td width="50%" align="center">
+				${order.inCharge}
+			</td>
+			<td width="50%" align="center">
+				${order.floor}
+			</td>
+		</tr>
+		<tr>
+			<td width="50%" align="center">
+				Encargado
+			</td>
+			<td width="50%" align="center">
+				Jefe de Piso/Tienda/Almacen
+			</td>
+		</tr>
+		<tr style="padding-top: 20px;">
+			<td width="50%" align="center">
+				_________________________________	
+			</td>
+			<td width="50%" align="center">
+				_________________________________	
+			</td>
+		</tr>
+		<tr>
+			<td width="50%" align="center">
+				${order.audit}
+			</td>
+			<td width="50%" align="center">
+				${order.store}
+			</td>
+		</tr>
+		<tr>
+			<td width="50%" align="center">
+				Auditor
+			</td>
+			<td width="50%" align="center">
+				Gerente de Piso/Tienda/Almacen
+			</td>
+		</tr>
+	</table>
+</body>
+</pdf>

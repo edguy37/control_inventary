@@ -1,0 +1,187 @@
+<?xml version="1.0"?>
+<!DOCTYPE pdf PUBLIC "-//big.faceless.org//report" "report-1.1.dtd">
+<pdf>
+	<head>		
+	<style type="text/css">
+		table{
+			font-family: Arial, Helvetica, sans-serif;
+		}
+		table#header{
+			font-size: 10pt;
+		}
+		table#detail{
+			font-size:9pt;
+		}
+		table#detail tbody{
+			font-size: 7pt;
+		}
+	</style>
+</head>
+<body footer="nlfooter" size="Letter-LANDSCAPE">
+	<table id="header" width="100%">
+		<tbody>
+			<tr>
+				<td colspan="2" align="center">
+					<strong>ACTA FINAL DE INVENTARIO</strong>
+				</td>
+			</tr>			
+		</tbody>
+	</table>
+
+	<table width="100%">		
+		<tbody>			
+			<tr>
+				<td>
+					SIENDO EL ${order.dateActa}, EN LAS OFICINAS DE ${order.subsidiary} UBICADAS EN LA ${order.address_fiscal}, ESTANDO PRESENTES AUDITOR; ${order.audit}, GERENTE DEL AREA; ${order.store}; JEFE DE PISO, ${order.floor}; ENCARGADO, ${order.inCharge}; DE ${order.location} CON DIRECCIÓN DE LA SUCURSAL EN ${order.address_location} SE HACE CONSTAR QUE EN ESTE ACTO RECIBEN A SU ENTERA Y COMPLETA SATISFACCION EL DEPARTAMENTO DE ${order.department} DEL AREA ANTES CITADA, QUEDANDO BAJO SU UNICA Y ESTRICTA RESPONSABILIDAD EL MISMO, EL CUAL CONTIENE LAS PIEZAS Y/O MERCANCIAS LAS CUALES HAN CONTADO Y REVISADO A SU ENTERA Y COMPLETA SATISFACCION, HACIENDO UN TOTAL DE ${order.condensado.total_fisico} PIEZAS INVENTARIADAS CON UN VALOR DE INVENTARIO DE ${order.condensado.valor.total_valor_fisico} SEGÚN RELACIÓN ANEXA.				
+				</td>							
+			</tr>			
+			<tr>
+				<td>
+					EL DETALLE A NIVEL ARTÍCULO DEL INVENTARIO REALIZADO, SE ENCUENTRA GUARDADO EN EL SISTEMA DE INVENTARIOS DE LA EMPRESA CON FOLIO DE ORDEN DE LEVANTAMIENTO: ${order.folio} CON FECHA DE REALIZACIÓN DEL ${order.dateOrder} AL ${order.dateEnd}; EL CUAL PUEDE SER CONSULTADO EN EL MOMENTO QUE SE NECESITE.					
+				</td>				
+			</tr>
+			<tr>
+				<td>
+					POR LO QUE SE COMPROMETEN BAJO SU MAS ESTRICTA RESPONSABILIDAD, DAR EL ADECUADO MANEJO, CONTROL Y SALVAGUARDA A LAS PIEZAS Y/O MERCANCIAS QUE RECIBE SEGÚN SE DETALLAN EN LOS ANEXOS MENCIONADOS, ASI COMO DE LOS MOVIMIENTOS DE RECEPCIONES Y/O ENTREGAS Y/O VENTAS A TODO LO INHERENTE A ELLAS Y/O CUALQUIER OTRO DATO QUE LE SEA REQUERIDO Y SEAN POSTERIORES AL DIA DE HOY Y QUE SE DEN DURANTE EL EJERCICIO DE SUS FUNCIONES COMO RESPONSABLE DEL DEPARTAMENTO, YA QUE EN CASO DE CUALQUIER FALTANTE QUE EXISTA EN DICHO DEPARTAMENTO, SERÁN LOS UNICOS RESPONSABLES.
+					PARA LO CUAL FIRMA A SU ENTERA CONFORMIDAD LA RECEPCION DEL DEPARTAMENTO QUE SE LE ENTREGA.
+				</td>				
+			</tr>
+			<tr>
+				<td>				
+					RECIBO A MI ENTERA CONFORMIDAD EL INVENTARIO FISICO DETALLADO CONTADO Y REVISADO A MI ENTERA Y COMPLETA SATISFACCION Y QUE EN EL ANEXO 1 SE ADJUNTAN A LA PRESENTE CONSTANCIA DEBIDAMENTE FIRMADOS POR LOS QUE INTERVENIMOS EN ELLOS.
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
+		<br />
+	<table width="100%">
+		<tr>
+			<td width="50%" align="center">
+				<strong>
+					_________________________________	
+				</strong>
+			</td>
+			<td width="50%" align="center">
+				<strong>
+					_________________________________
+				</strong>
+			</td>
+		</tr>
+		<tr>
+			<td width="50%" align="center">
+				${order.inCharge}
+			</td>
+			<td width="50%" align="center">
+				${order.floor}
+			</td>
+		</tr>
+		<tr>
+			<td width="50%" align="center">
+				Encargado
+			</td>
+			<td width="50%" align="center">
+				Jefe de Piso/Tienda/Almacen
+			</td>
+		</tr>
+		<tr style="padding-top: 20px;">
+			<td width="50%" align="center">
+				_________________________________	
+			</td>
+			<td width="50%" align="center">
+				_________________________________	
+			</td>
+		</tr>
+		<tr>
+			<td width="50%" align="center">
+				${order.audit}
+			</td>
+			<td width="50%" align="center">
+				${order.store}
+			</td>
+		</tr>
+		<tr>
+			<td width="50%" align="center">
+				Auditor
+			</td>
+			<td width="50%" align="center">
+				Gerente de Piso/Tienda/Almacen
+			</td>
+		</tr>
+	</table>  
+
+
+	<pbr/>
+
+	<table id="header" width="100%">
+		<tbody>
+			<tr>
+				<td colspan="2" align="center">
+					<strong>ANEXO ACTA DE INVENTARIO FÍSICO POR PROVEEDOR</strong>
+				</td>				
+			</tr>
+			<tr>
+				<td colspan="2" align="center">
+					<strong>TIENDAS CHAPUR, S.A. DE C.V</strong>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2" align="center">
+					<strong>Inventario Físico</strong>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2" align="center">
+					<strong>
+						${order.mes}
+					</strong>
+				</td>
+			</tr>
+			<tr>				
+				<td colspan="2" align="center">
+					<strong> ${order.location} </strong>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2" align="center">
+					<strong> ${order.department} </strong>
+				</td>			
+			</tr>			
+		</tbody>
+	</table>
+
+	<table width="100%" cellspacing="2" cellpadding="1" style="padding-top: 20px;">
+		<thead>
+			<tr>
+				<th align="center"><strong>Orden</strong></th>
+				<th align="center"><strong>NumPro</strong></th>
+				<th align="left"><strong>Nombre</strong></th>
+				<th align="center"><strong>Fecha Ejecución</strong></th>
+				<th align="center"><strong>Físico</strong></th>
+				<th align="center"><strong>Valor Físico</strong></th>				
+			</tr>
+		</thead>
+		<tbody>
+			<#list order.detail as item>
+				<tr>					
+					<td align="center"> ${order.folio}</td>
+					<td align="center">${item.num_prov}</td>
+					<td align="left">${item.name_prov}</td>
+					<td align="center">${order.dateEnd}</td>
+					<td align="center">${item.total_fisico}</td>
+					<td align="center">$ ${item.total_amount}</td>
+				</tr>
+			</#list>
+			<tr style="border-top: 1pt solid black;">				
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td align="center"><strong>${order.condensado.total_fisico}</strong></td>
+				<td align="center"><strong>$ ${order.condensado.total_valor_fisico}</strong></td>				
+			</tr>
+		</tbody>
+	</table>
+
+</body>
+</pdf>
