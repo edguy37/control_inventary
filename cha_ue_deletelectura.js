@@ -14,27 +14,11 @@ define(
     };
 
     entry_point.beforeSubmit = (context) => {
-      if (context.type === 'edit') {
-          log.debug({title:"log before"});
-
-      }if (context.userEventType === 'edit') {
-        log.debug({title:"log before extended"});
-
-      }else{log.debug({title:"else beforeSubmit"})}
-
-      log.debug("afuera del if before", context);
+      log.debug("log context before", context.type);
     }
 
     entry_point.afterSubmit = (context) => {
-      if (context.type === 'edit') {
-          log.debug("log after");
-
-      }if (context.userEventType === 'edit') {
-        log.debug("log before extended");
-
-      }else{log.debug({title:"else afterSubmit"})}
-
-      log.debug({title:"afuera del if after"});
+      log.debug("log context after", context.type);
     }
     
     return entry_point;
