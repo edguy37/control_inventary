@@ -608,7 +608,7 @@ define(['N/search', 'N/file', 'N/log', 'N/record', 'N/query', ], function (searc
       });
       customrecord_control_inventory_bodySearchPage.data.forEach(function (result) {
         items.push({
-          itemid: Number(result.id),
+          itemid: result.id,
           internalid: Number(result.getValue(itemidColumn)),
           codigo: result.getValue(codigoColumn),//PABC 03-11-22 Agregado de un nuevo campo
           vendor: Number(result.getValue(vendorColumn)),
@@ -632,7 +632,7 @@ define(['N/search', 'N/file', 'N/log', 'N/record', 'N/query', ], function (searc
           system_amount: Number(result.getValue(systemAmountColumn)), //valor sistema
           system_amount_cost: Number(result.getValue(systemAmountCostColumn)), //valor sistema costo
           in_store_amount: Number(result.getValue(inStoreAmountColumn)), //valor fisico
-          id: 0,
+          id: "0",
         });
       });
     }
@@ -727,7 +727,7 @@ define(['N/search', 'N/file', 'N/log', 'N/record', 'N/query', ], function (searc
       });
       customrecord_control_inventory_bodySearchPage.data.forEach(function (result) {
         items.push({
-          itemid: Number(result.id),
+          itemid: result.id,
           internalid: Number(result.getValue(itemidColumn)),
           vendor: Number(result.getValue(vendorColumn)),
           purchase_description: result.getValue(purchaseDescriptonColumn) || ' ',
@@ -750,7 +750,7 @@ define(['N/search', 'N/file', 'N/log', 'N/record', 'N/query', ], function (searc
           system_amount: Number(result.getValue(systemAmountColumn)), //valor sistema
           system_amount_cost: Number(result.getValue(systemAmountCostColumn)), //valor sistema costo
           in_store_amount: Number(result.getValue(inStoreAmountColumn)), //valor fisico
-          id: 0,
+          id: "0",
         });
       });
     }

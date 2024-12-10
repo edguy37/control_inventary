@@ -5,7 +5,7 @@
  * @NApiVersion 2.1
  * @NScriptType Suitelet
  */
- define(['N/redirect', 'N/record', 'N/task', './libraries/iniciar_reporte/controlinventory', './libraries/lib_items', 'N/log'], function (redirect, record, task, iniciarReporte, item, log) {
+define(['N/redirect', 'N/record', 'N/task', './libraries/iniciar_reporte/controlinventory', './libraries/lib_items', 'N/log'], function (redirect, record, task, iniciarReporte, item, log) {
 
     const entry_point = {
         onRequest: (context) => {}
@@ -58,6 +58,11 @@
                 break; //end case GET
             }
             case 'POST': {
+                log.debug('context.request.parameters',context.request.parameters); 
+                log.debug('context.request.parameters.action', context.request.parameters.action); 
+                log.debug('context.request.parameters.data', context.request.parameters.data);
+                log.debug('context.request.parameters.order', context.request.parameters.order);
+                
                 switch (parameters.submitter) {
                     case 'Crear orden de levantamiento': {
 
@@ -140,6 +145,19 @@
                         break;
                     }
                 }
+
+                switch (parameters.action) {
+                    
+                    case 'createAnalysisPOST': {
+                        form = iniciarReporte.analysis({
+                            order: parameters.order,
+                            data: parameters.data || ''
+                        });
+                        //se escribe el formulario en el suitelet, según la versión que se necesite
+                        context.response.writePage(form);
+                        break;
+                    } 
+                }
                 break;
             }
         }
@@ -202,12 +220,7 @@
         try {
 
             let orderID = order.save();
-
-            var newOrder = record.load({
-                type: "customrecord_order_control_inventory",
-                id: orderID,
-                isDynamic: true
-            });
+            log.debug('orderID', orderID);
 
             const loadItems = task.create({
                 taskType: task.TaskType.MAP_REDUCE
@@ -231,18 +244,17 @@
             };
 
             var taskID = loadItems.submit();
+            log.debug('custrecord_add_items_taskid', taskID);
+            log.debug('custrecord_control_inventory_folio', 'OLI' + (orderID).toString().padStart(7, 0));
 
-            newOrder.setValue({
-                fieldId: 'custrecord_add_items_taskid',
-                value: taskID
+            record.submitFields({
+                type: "customrecord_order_control_inventory",
+                id: orderID,
+                values: {
+                    custrecord_add_items_taskid: taskID,
+                    custrecord_control_inventory_folio:  'OLI' + (orderID).toString().padStart(7, 0)
+                }
             });
-
-            newOrder.setValue({
-                fieldId: 'custrecord_control_inventory_folio',
-                value: 'OLI' + (orderID).toString().padStart(7, 0)
-            });
-
-            newOrder.save();
 
             return orderID;
 

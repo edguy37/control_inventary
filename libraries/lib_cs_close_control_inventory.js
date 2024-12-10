@@ -279,7 +279,6 @@ define(['N/url', 'N/currentRecord', 'N/ui/message', 'N/search', 'N/record', 'N/h
         })
     }
     entry_point.makeAnalysisOpen = function (order) {
-        console.log('FUNCION REABRIR LECTURAS');
 
         Swal.fire({
             title: '¿Desea cambiar el estado a "Lecturas Cerradas"?',

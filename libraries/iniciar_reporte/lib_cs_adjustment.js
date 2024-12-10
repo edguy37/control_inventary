@@ -124,7 +124,7 @@ define(['N/record', 'N/search', 'N/currentRecord', 'N/ui/dialog', 'N/url', 'N/ht
       //Una vez actualizados los motivos se limpia el multiselect y el select para continuar con la asignacion de motivos (para iniciar un nuevo flujo al seleccionar una observacion)
       //desmarcar el MULTISELECT observacion "custpage_observation_filter"
       deselectObservationFilter();
-      //poner en blanco el SELECT motivos de ajuste "custpage_adjustment_reason"
+      //desmarcar el SELECT motivos de ajuste "custpage_adjustment_reason"
       deselectAdjustmentReason();
 
     }else{
