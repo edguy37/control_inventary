@@ -14,8 +14,7 @@ define(
 
     entry_point.post = function (context) {
       if (file_in_folder(context.file.folder, context.file.name)) {
-        let search_return = file_in_folder(context.file.folder, context.file.name);
-        return { code: 'error', message: 'Ya existe un archivo con ese nombre, no se ha cargado ' + context.file.name + ' para evitar duplicarlo!' + JSON.stringify(context)};
+        return { code: 'error', message: 'Ya existe un archivo con ese nombre, no se ha cargado ' + context.file.name + ' para evitar duplicarlo!'};
       }
 
       try {
@@ -95,7 +94,7 @@ define(
           'AND',
           ['file.name', 'is', file_name]
         ]
-      }).runPaged();
+      }).runPaged().count;
 
       return file_uploaded;
     }
