@@ -7,10 +7,10 @@
 define(['N/search', 'N/file', 'N/log', 'N/record', 'N/query', ], function (search, file, log, record, query) {
   const entry_point = {
     get_items_by_file: null,
-    get_items_by_filters: null,
-    get_items_by_order: null,
     get_items_by_order_detail: null,
+    get_items_by_order: null,
     get_item_by_itemid: null,
+    get_items_by_filters: null,
     get_items_by_analysis_filters: null
   }
 
