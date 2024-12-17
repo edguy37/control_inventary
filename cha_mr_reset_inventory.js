@@ -1,7 +1,7 @@
 /**
  * @author Néstor Á.
- * @Name cha_mr_add_items_to_order.js
- * @description Se anexan los articulos a la orden de levantamiento.
+ * @Name cha_mr_reset_inventory.js
+ * @description Se retiran los articulos de la orden de levantamiento.
  * @NApiVersion 2.1
  * @NScriptType MapreduceScript
  */
