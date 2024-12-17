@@ -26,7 +26,8 @@ define(
         let ids = file_items.map(item => item.internalid);
         // log.debug("file_items", file_items);
         // log.debug("items.internalid", ids);
-
+        // let item = {};
+        // let i = 0;
         var s = search.create({
           type: "customrecord_control_inventory_body",
           filters:
@@ -43,7 +44,7 @@ define(
              "custrecord_ci_body_difference"
           ]
        }).run().each((el)=>{
-          let item = {
+          item = {
             itemid: el.getText('internalid'),
             in_system: Number(el.getValue('custrecord_ci_body_availabe')),
             in_store: Number(el.getValue('custrecord_ci_body_in_store')),
@@ -52,9 +53,9 @@ define(
           let in_store = item.in_store - file_items.count;
           let in_system = item.in_system;
           let difference = in_store - in_system;
+          i++;
           return true;
         });
-        log.debug("items",item);
       /* record.submitFields({
         type: 'customrecord_control_inventory_body',
         id: el.internalid,
@@ -70,50 +71,3 @@ define(
     return entry_point;
 
   });
-
-
-  function beforeSubmit(context) {
-    //saveLog("BeforeSubmit context", context)
-    //log.debug("Beforesubtmit TYPE_VIEW_SUBMIT", context.type);
-    if (context.type == context.UserEventType.DELETE) {
-        if (context.newRecord.getValue({
-                fieldId: 'type'
-            })) {
-            var vendorPayment = context.newRecord;
-        } else {
-            var vendorPayment = context.oldRecord;
-        }
-
-        //log.debug("vendor DAta", vendorPayment);
-        //log.debug("subsidiary", vendorPayment.getValue({ fieldId: 'subsidiary' }));
-
-        //Validacion pra cuando llegue el evento desde microsip
-        if (!(vendorPayment.getValue({
-                fieldId: 'subsidiary'
-            }) && vendorPayment.getLineCount({
-                sublistId: 'apply'
-            }))) {
-            log.debug("NO llegaron los campos subsidiary y apply");
-            recordID = vendorPayment.id;
-            try {
-                vendorPayment = record.load({
-                    type: record.Type.CUSTOMER_PAYMENT,
-                    id: recordID,
-                    isDynamic: true
-                });
-            } catch (error) {
-
-            }
-        }
-        var numRows = vendorPayment.getLineCount({
-                sublistId: 'apply'
-            }),
-            reConfig = customDataAPI.getConfig(vendorPayment.getValue({
-                fieldId: 'subsidiary'
-            })),
-            billIdList = [];
-
-        if (reConfig) {
-        }
-    }
-}
