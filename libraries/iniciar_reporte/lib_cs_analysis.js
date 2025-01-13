@@ -195,39 +195,58 @@ define(['N/record', 'N/search', 'N/currentRecord', 'N/url', 'N/ui/dialog', 'N/lo
     const _currentRecord = currentRecord.get();
     if (_currentRecord.getValue({
         fieldId: 'custpage_vendor_filter'
-      }).filter(el => el === '').length && _currentRecord.getValue({
+    }).filter(el => el === '').length && _currentRecord.getValue({
         fieldId: 'custpage_model_filter'
-      }).filter(el => el === '').length) {
+    }).filter(el => el === '').length) {
       dialog.alert({
-        title: 'Error!',
-        message: 'Selecciona un proveedor o un modelo para filtrar articulos'
+          title: 'Error!',
+          message: 'Selecciona un proveedor o un modelo para filtrar articulos'
       });
       return false;
     }
-
-    //se cambian los valores de los filtros para contruir la sublista de articulos
+    // Se cambian los valores de los filtros para construir la sublista de artículos
     const url_suitelet = url.resolveScript({
-      scriptId: 'customscript_cha_s_control_inventary',
-      deploymentId: 'customdeploy_cha_s_control_inventary',
+        scriptId: 'customscript_cha_s_control_inventary',
+        deploymentId: 'customdeploy_cha_s_control_inventary',
     });
     const data = {
-      vendor: _currentRecord.getValue({fieldId: 'custpage_vendor_filter'}),
-      model: _currentRecord.getValue({fieldId: 'custpage_model_filter'}),
-      description: _currentRecord.getValue({fieldId: 'custpage_filter_description'}).toUpperCase()
+        vendor: _currentRecord.getValue({fieldId: 'custpage_vendor_filter'}),
+        model: _currentRecord.getValue({fieldId: 'custpage_model_filter'}),
+        description: _currentRecord.getValue({fieldId: 'custpage_filter_description'}).toUpperCase()
     };
-    const encodedData = btoa(JSON.stringify(data));
-    console.log('encodeddata',encodedData);
-    window.location.href = url.format({
-      domain: url_suitelet,
-      params: {
-        action: 'createAnalysis',
-        order: Number(_currentRecord.getValue({
-          fieldId: 'custpage_folio'
-        })),
-        data: encodedData
-      }
-    });
+
+    // Se especifica metodo POST, action URL del suitelet
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url_suitelet;
+
+    // Input para la acción (agregamos el parámetro 'action')
+    const actionInput = document.createElement('input');
+    actionInput.type = 'hidden';
+    actionInput.name = 'action';  // Este campo 'action' será usado en el Suitelet
+    actionInput.value = 'createAnalysisPOST';  // Valor para indicar qué acción se ejecutará en el Suitelet
+
+    // Input Order
+    const orderInput = document.createElement('input');
+    orderInput.type = 'hidden';
+    orderInput.name = 'order';
+    orderInput.value = Number(_currentRecord.getValue({fieldId: 'custpage_folio'}));
+
+    // Input Data
+    const dataInput = document.createElement('input');
+    dataInput.type = 'hidden';
+    dataInput.name = 'data';
+    dataInput.value = btoa(JSON.stringify(data));
+
+    form.appendChild(actionInput);
+    form.appendChild(orderInput);
+    form.appendChild(dataInput);
+
+    // Agregar el formulario al documento y enviarlo
+    document.body.appendChild(form);
+    form.submit();
   }
+
   entry_point.fieldChanged = (context) => {
     const _currentRecord = context.currentRecord;
     //si se realiza un cambio en los valores de observación y analisis en la sublita items, se actualiza su valor en el regitro
@@ -287,6 +306,11 @@ define(['N/record', 'N/search', 'N/currentRecord', 'N/url', 'N/ui/dialog', 'N/lo
   }
   entry_point.backToOrder = () => {
     //cuando se de clic al botón "volver a la orden", se envia de nuevo al registro de la orden de inventario con el id correspondiente
+    //custpage_to_analisis_order
+    let boton = document.getElementById('custpage_to_analisis_order');
+    console.log('boton', boton);
+
+        
     const _currentRecord = currentRecord.get();
     const urlToRecord = url.resolveRecord({
       recordType: 'customrecord_order_control_inventory',
@@ -500,7 +524,7 @@ define(['N/record', 'N/search', 'N/currentRecord', 'N/url', 'N/ui/dialog', 'N/lo
     
     // Se obtienen todos los modelos disponibles
     allOptions.forEach(function(option) {
-      valuesToSelect.push(option.value);  // Agregar cada valor al array
+      valuesToSelect.push(option.value);  
     });
     console.log('valuesToSelect All Models',valuesToSelect);
     // Se marcan todos los modelos disponibles 
@@ -513,7 +537,7 @@ define(['N/record', 'N/search', 'N/currentRecord', 'N/url', 'N/ui/dialog', 'N/lo
   function deselectAllModels() {
     let _currentRecord = currentRecord.get();
     
-    // Establecer un array vacío para desmarcar todas las opciones
+    // resetear el multiselect
     _currentRecord.setValue({
       fieldId: 'custpage_model_filter',
       value: [] 
@@ -531,8 +555,8 @@ define(['N/record', 'N/search', 'N/currentRecord', 'N/url', 'N/ui/dialog', 'N/lo
     
     // Se obtienen todos los modelos disponibles
     allOptions.forEach(function(option) {
-      if (option.value && option.value !== '') {  // Verificar que el valor no esté vacío o nulo
-        valuesToSelect.push(option.value);  // Agregar cada valor al array
+      if (option.value && option.value !== '') {  
+        valuesToSelect.push(option.value);  
       }
     });
     console.log('valuesToSelect All Vendors',valuesToSelect);
@@ -547,7 +571,7 @@ define(['N/record', 'N/search', 'N/currentRecord', 'N/url', 'N/ui/dialog', 'N/lo
   function deselectAllVendors() {
     let _currentRecord = currentRecord.get();
     
-    // Establecer un array vacío para desmarcar todas las opciones
+    // resetear el multiselect
     _currentRecord.setValue({
       fieldId: 'custpage_vendor_filter',
       value: []  

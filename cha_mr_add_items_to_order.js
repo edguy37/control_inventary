@@ -8,11 +8,12 @@
 
 define(['N/error', 'N/record', 'N/runtime', 'N/search', 'N/task'], function (error, record, runtime, search, task) {
 
+    // Obtiene una vez el script
+    const script = runtime.getCurrentScript();
+
     function getInputData() {
 
         var unProcessedItems = [];
-
-        const script = runtime.getCurrentScript();
 
         const orderID = Number(script.getParameter({
             name: 'custscript_order_id'
@@ -35,11 +36,17 @@ define(['N/error', 'N/record', 'N/runtime', 'N/search', 'N/task'], function (err
         }));
 
         log.debug('PROCESANDO ORDEN DE LEVANTAMIENTO', `${orderID}`);
+        log.debug('orderID',orderID);
+        log.debug('subsidiaryID',subsidiaryID);
+        log.debug('locationID',locationID);
+        log.debug('departmentID',departmentID);
+        log.debug('vendorData',vendorData);
+        log.debug('classID',classID);
 
-        log.audit('departmentID', departmentID);
+
         let arrag = [];
-        log.audit('vendorData',vendorData);
-        log.audit('vendorData2', typeof(vendorData));
+        //log.audit('vendorData',vendorData);
+        //log.audit('vendorData2', typeof(vendorData));
         if(vendorData !== null && vendorData !== " " && vendorData !== undefined){
             var work = vendorData.split(',');
             for(var x = 0; x < work.length; x++){
@@ -60,15 +67,19 @@ define(['N/error', 'N/record', 'N/runtime', 'N/search', 'N/task'], function (err
             ['isinactive', 'is', false]
         ];
 
-        let ubicacion = record.load({
+        let location_type = 0;
+        let locationSearch = search.create({
             type: "location",
-            id: locationID,
-            isDynamic: false
+            filters: [["internalid", "is", locationID]],
+            columns: ["locationtype"]
         });
 
-        let location_type = Number(ubicacion.getValue({
-            fieldId: 'locationtype'
-        })); //Acomodo-1 Tienda-4
+        let results = locationSearch.run().getRange({ start: 0, end: 1 }); 
+
+        if (results.length > 0) {
+            location_type = Number(results[0].getValue("locationtype"));
+        }
+        log.debug('locationType', location_type);
 
         if (departmentID != 0)
             filters.push('AND', ['department', 'anyof', departmentID], );
@@ -120,6 +131,11 @@ define(['N/error', 'N/record', 'N/runtime', 'N/search', 'N/task'], function (err
 
             currentPage.data.forEach(function (_result) {
                 let available = 0;
+                log.debug('locationquantityavailable',);
+                log.debug({
+                    title: 'FOREACH currentPage', 
+                    details: '_result.id: ' + _result.id + ', locationquantityavailable: ' + _result.getValue('locationquantityavailable') + ', locationquantitycommitted' + _result.getValue('locationquantitycommitted') + ', locationquantityonhand' + _result.getValue('locationquantityonhand')
+                  });
 
                 if (location_type === 1 || location_type === 4) {
                     available = Number(_result.getValue('locationquantityavailable')) + Number(_result.getValue('locationquantitycommitted'));
@@ -188,9 +204,7 @@ define(['N/error', 'N/record', 'N/runtime', 'N/search', 'N/task'], function (err
      */
     function map(context) {
         try {
-
-            const script = runtime.getCurrentScript();
-
+            
             const orderID = Number(script.getParameter({
                 name: 'custscript_order_id'
             }));
@@ -199,49 +213,36 @@ define(['N/error', 'N/record', 'N/runtime', 'N/search', 'N/task'], function (err
 
             log.debug("PROCESANDO BLOQUE", "INICIA_BLOQUE");
             log.debug("TAMAÑO DEL BLOQUE", blockData[0].length);
-            var itemsToProcess = [];
+
 
             for (let i = 0; i < blockData[0].length; i++) {
                 var el = blockData[0][i];
 
-                itemsToProcess.push({
-                    vendor: el.vendor,
-                    vendor_text: el.vendor_text,
-                    itemid: el.itemid,
-                    internalid: el.internalid,
-                    purchase_description: el.purchase_description,
-                    displayname: el.displayname,
-                    size: el.size,
-                    color: el.color,
-                    unitstype: el.unitstype,
-                    available: el.available,
-                    in_store: el.in_store,
-                    difference: el.difference,
-                    confiability: el.confiability,
-                    analysis: el.analysis,
-                    base_price: el.base_price,
-                    average_cost: el.average_cost,
-                    price_amount: el.price_amount,
-                    cost_amount: el.cost_amount,
-                    system_amount: el.system_amount,
-                    system_amount_cost: el.system_amount_cost,
-                    in_store_amount: el.in_store_amount
-                });
+                record.create({type: "customrecord_control_inventory_body", isDynamic: false})
+                    .setValue({fieldId: 'custrecord_ci_body_parent', value: orderID})
+                    .setValue({fieldId: 'custrecord_ci_body_vendor', value: el.vendor})
+                    .setValue({fieldId: 'custrecord_ci_body_vendor_text_', value: el.vendor_text})
+                    .setValue({fieldId: 'custrecord_ci_body_itemid', value: el.internalid})
+                    .setValue({fieldId: 'custrecord_ci_body_numart_text_', value: el.itemid})
+                    .setValue({fieldId: 'custrecord_ci_body_purchase_description', value: el.purchase_description})
+                    .setValue({fieldId: 'custrecord_ci_body_displayname', value: el.displayname})
+                    .setValue({fieldId: 'custrecord_ci_body_size', value: el.size})
+                    .setValue({fieldId: 'custrecord_ci_body_color', value: el.color})
+                    .setValue({fieldId: 'custrecord_ci_body_unitstype', value: el.unitstype})
+                    .setValue({fieldId: 'custrecord_ci_body_availabe', value: el.available})
+                    .setValue({fieldId: 'custrecord_ci_body_in_store', value: el.in_store})
+                    .setValue({fieldId: 'custrecord_ci_body_difference', value: el.difference})
+                    .setValue({fieldId: 'custrecord_ci_body_confiability', value: el.confiability})
+                    .setValue({fieldId: 'custrecord_ci_body_analysis', value: el.analysis})
+                    .setValue({fieldId: 'custrecord_ci_body_base_price', value: el.base_price})
+                    .setValue({fieldId: 'custrecord_ci_body_average_cost', value: el.average_cost})
+                    .setValue({fieldId: 'custrecord_ci_body_price_amount', value: el.price_amount})
+                    .setValue({fieldId: 'custrecord_ci_body_cost_amount', value: el.cost_amount})
+                    .setValue({fieldId: 'custrecord_ci_body_system_amount', value: el.system_amount})
+                    .setValue({fieldId: 'custrecord_ci_body_system_amount_cost', value: el.system_amount_cost})
+                    .setValue({fieldId: 'custrecord_ci_body_in_store_amount', value: el.in_store_amount})
+                    .save({ignoreMandatoryFields: true});            
             }
-            log.debug('ORDER ID ANTES CREAR TAREA', orderID);
-            log.debug('ITEMTOPROCESS ANTES CREAR TAREA', JSON.stringify(itemsToProcess));
-
-            // Una vez agrupados los 150 items se mandan al script programado para registrarlos en la orden
-            const scheduledTask = task.create({
-                taskType: task.TaskType.SCHEDULED_SCRIPT,
-                scriptId: 'customscript_cha_sc_add_items_to_order', // ID del script programado
-                params: {
-                    custscript_order_id_sc: orderID,  // Parametro adicional para identificar el pedido
-                    custscript_items_to_process_1: JSON.stringify(itemsToProcess)  // Pasamos los datos como string
-                }
-            });
-
-            scheduledTask.submit();  // Ejecutamos la tarea programada
 
             log.debug("PROCESANDO BLOQUE", "TERMINA BLOQUE");
 
@@ -265,29 +266,22 @@ define(['N/error', 'N/record', 'N/runtime', 'N/search', 'N/task'], function (err
         log.debug('Map Summary: ', JSON.stringify(summary.mapSummary));
         log.debug('Reduce Summary: ', JSON.stringify(summary.reduceSummary));
 
-        const script = runtime.getCurrentScript();
-
         const orderID = Number(script.getParameter({
             name: 'custscript_order_id'
         }));
 
-        let order = record.load({
-            type: "customrecord_order_control_inventory",
+        record.submitFields({
+            type: 'customrecord_order_control_inventory',
             id: orderID,
-            isDynamic: true
+            values: {
+                'custrecord_control_inventory_status': 'Sin lecturas'
+            }
         });
-
-        order.setValue({
-            fieldId: 'custrecord_control_inventory_status',
-            value: 'Sin lecturas'
-        });
-
-        order.save();
 
         var customrecord_control_inventory_bodySearchObj = search.create({
             type: "customrecord_control_inventory_body",
             filters: [
-                ["custrecord_ci_body_parent", "anyof", order.id],
+                ["custrecord_ci_body_parent", "anyof", orderID],
                 "AND",
                 [
                     ["custrecord_ci_body_numart_text_", "isempty", ""],
@@ -301,6 +295,7 @@ define(['N/error', 'N/record', 'N/runtime', 'N/search', 'N/task'], function (err
         });
 
         var searchResultCount = customrecord_control_inventory_bodySearchObj.runPaged().count;
+        log.debug('ARTICULOS CON NUMART TEXT Y VENDOR TEXT VACIOS', searchResultCount);
 
         //creación de tarea para crear la actualizar los datos
         if (searchResultCount > 0) {
@@ -309,7 +304,7 @@ define(['N/error', 'N/record', 'N/runtime', 'N/search', 'N/task'], function (err
             });
             updNumart.scriptId = 'customscript_cha_mr_upd_orden_levantamie';
             updNumart.params = {
-                custscript_orderupd: order.id
+                custscript_orderupd: orderID
             };
             updNumart.submit();
         }

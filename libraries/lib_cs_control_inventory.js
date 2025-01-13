@@ -19,6 +19,7 @@ define(['N/url', 'N/currentRecord', 'N/ui/message', 'N/search', 'N/record', 'N/h
             reject: function () {},
             createGlobalFile: function (context) {},
             toAnalizeAgain: function (context) {},
+            makeReabrirAnalisis: function (context) {},
             makeReadOpen: function(order){},
             print_order: null
         }
@@ -251,6 +252,34 @@ define(['N/url', 'N/currentRecord', 'N/ui/message', 'N/search', 'N/record', 'N/h
 
 
         }
+        // Se agrega DACE - 27/12/2024
+        entry_point.makeReabrirAnalisis = function (order) {
+          const response = https.post({
+            url: url.resolveScript({
+              scriptId: 'customscriptcha_rl_reverseadjustment',
+              deploymentId: 'customdeploy_rl_reverseadjustment_1'
+            }),
+            headers: {
+              'content-type': ' application/json'
+            },
+            body: {
+              order: order,
+            }
+          });
+          const response_body = JSON.parse(response.body);
+          if (response_body.code === 'error') {
+            dialog.create({
+              title: 'Error!',
+              message: response_body.message
+            });
+          } else {
+            window.location.href = url.resolveRecord({
+              recordType: 'customrecord_order_control_inventory',
+              recordId: order,
+            });;
+          }
+        }
+  // Finaliza cambio agregado DACE - 27/12/2024
 
         function callDeleteSL(orderID) {
 

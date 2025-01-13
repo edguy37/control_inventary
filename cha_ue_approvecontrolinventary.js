@@ -10,18 +10,18 @@ define(['N/redirect', 'N/task', 'N/search', 'N/runtime'], function (redirect, ta
    const entry_point = {
       beforeLoad: null,
    };
-
+ 
    const rolesPermission = {
       openReadOrder: [3, 1110, 1015, 1016, 1152],
       openAnalysisOrder: [3, 1110, 1015, 1016, 1152],
       adminsOnly: [3, 1016, 1152],
    }
-
+ 
    entry_point.beforeLoad = function (context) {
-
+ 
       let roleID = runtime.getCurrentUser().role
       log.debug("ROLE_ID", roleID)
-
+ 
       switch (context.type) {
          case 'create': { //CUM 04Nov2021 redirigir a suitelet para crear orden de levantamiento
             redirect.toSuitelet({
@@ -43,7 +43,7 @@ define(['N/redirect', 'N/task', 'N/search', 'N/runtime'], function (redirect, ta
             });
             context.form.clientScriptModulePath = './libraries/lib_cs_close_control_inventory.js'; //se carga el client script como modulo del suitelet
             //si hay una tarea pendiente generando el archivo concentrado en record entonces se muestra la notificación
-
+ 
             const order = search.lookupFields({
                type: 'customrecord_order_control_inventory',
                id: context.newRecord.id,
@@ -53,7 +53,8 @@ define(['N/redirect', 'N/task', 'N/search', 'N/runtime'], function (redirect, ta
                   'custrecord_control_inventory_file',
                   'custrecord_archivo_aprobacion_taskid',
                   'custrecord_add_items_taskid',
-                  'custrecord_add_detail_rollback'
+                  'custrecord_add_detail_rollback',
+                  'custrecord_reverseadjustment_taskid'
                ]
             });
             
@@ -63,11 +64,11 @@ define(['N/redirect', 'N/task', 'N/search', 'N/runtime'], function (redirect, ta
                   type: 'INLINEHTML',
                   label: '_carga_articulos_message'
                });
-
+ 
                const addItemsTask = task.checkStatus(order.custrecord_add_items_taskid);
-
+ 
                if (['PENDING', 'PROCESSING'].indexOf(addItemsTask.status) > -1) {
-
+ 
                   taskNotificacion({
                         title: 'Generando carga de inventario',
                         message: `Se estan generando los articulos al inventario: <b>${addItemsTask.getPercentageCompleted()}%</b>`,
@@ -75,21 +76,21 @@ define(['N/redirect', 'N/task', 'N/search', 'N/runtime'], function (redirect, ta
                      },
                      injected_field
                   );
-
+ 
                }
             }
-
+ 
             if (order.custrecord_add_detail_rollback) {
                const injected_field = context.form.addField({
                   id: 'custpage_rollback_articulos_message',
                   type: 'INLINEHTML',
                   label: '_rollback_articulos_message'
                });
-
+ 
                const rollbackItemsTask = task.checkStatus(order.custrecord_add_detail_rollback);
-
+ 
                if (['PENDING', 'PROCESSING'].indexOf(rollbackItemsTask.status) > -1) {
-
+ 
                   taskNotificacion({
                         title: 'Haciendo rollback a la carga de inventario',
                         message: `Se estahaciendo rollback a los articulos de la orden de levantamiento: <b>${rollbackItemsTask.getPercentageCompleted()}%</b>`,
@@ -97,10 +98,10 @@ define(['N/redirect', 'N/task', 'N/search', 'N/runtime'], function (redirect, ta
                      },
                      injected_field
                   );
-
+ 
                }
             }
-
+ 
             if (order.custrecord_archivo_concentrado_taskid) {
                const injected_field = context.form.addField({
                   id: 'custpage_globalfile_message',
@@ -181,7 +182,53 @@ define(['N/redirect', 'N/task', 'N/search', 'N/runtime'], function (redirect, ta
                   );
                }
             }
-
+           
+           // Se agrega cambio - DACE 
+           // Si hay una tarea pendiente generando la reversa de los ajustes de inventario, se muestra la notificación correspondiente
+           if (order.custrecord_reverseadjustment_taskid) {
+             const injected_field = context.form.addField({
+               id: 'custpage_reverseadjustment_message',
+               type: 'INLINEHTML',
+               label: '_reverseadjustment_message'
+             });
+             // Se obtiene el estado de la tarea de reversa
+             const reverseadjustmentTask = task.checkStatus(order.custrecord_reverseadjustment_taskid);
+             // Si la tarea está pendiente o en proceso, se muestra el porcentaje de avance
+             if (['PENDING', 'PROCESSING'].indexOf(reverseadjustmentTask.status) > -1) {
+               taskNotificacion({
+                 title: 'Generando reversa de ajustes de inventario',
+                 message: `Se están generando los ajustes de inventario: <b>${reverseadjustmentTask.getPercentageCompleted()}%</b>`,
+                 type: 'message.Type.INFORMATION'
+               }, injected_field);
+             }
+             if (['FAILED'].indexOf(reverseadjustmentTask.status) > -1) {
+                  taskNotificacion({
+                        title: 'Generando rollback de ajustes de inventario',
+                        message: `Ocurrio un error mientras se intentaba generar el rollback de los ajustes de inventario correspondientes.`,
+                        type: 'message.Type.ERROR'
+                     },
+                     injected_field
+                  );
+               }
+             // Si la tarea ha fallado o está completa, se muestra el mensaje correspondiente
+            /* if (['COMPLETE', 'FAILED'].indexOf(reverseadjustmentTask.status) > -1) {
+               if (reverseadjustmentTask.status === 'COMPLETE') {
+                 taskNotificacion({
+                   title: 'Generando reversa de ajustes de inventario',
+                   message: `La reversa de los ajustes de inventario fue exitosa.`,
+                   type: 'message.Type.INFORMATION'
+                 }, injected_field);
+               } else if (reverseadjustmentTask.status === 'FAILED') {
+                 taskNotificacion({
+                   title: 'Generando reversa de ajustes de inventario',
+                   message: `Ocurrió un error al generar la reversa de los ajustes de inventario.`,
+                   type: 'message.Type.ERROR'
+                 }, injected_field);
+               }
+             }*/
+             
+           }
+           // Se termina el cambio
             switch (context.newRecord.getValue('custrecord_control_inventory_status')) {
                case 'Sin lecturas': {
                   context.form.addButton({
@@ -205,25 +252,45 @@ define(['N/redirect', 'N/task', 'N/search', 'N/runtime'], function (redirect, ta
                   break;
                }
                case 'Lecturas cerradas': {
-
                   context.form.addButton({
                      id: 'custpage_to_upload',
                      label: 'Análisis',
                      functionName: 'createAnalysis(' + context.newRecord.id + ')'
                   });
-
-                  if (rolesPermission.openReadOrder.includes(roleID)) {
-                     context.form.addButton({
-                        id: 'custpage_to_open_order',
-                        label: 'Reabrir Lecturas',
-                        functionName: 'makeReadOpen(' + context.newRecord.id + ')'
-                     });
-                  }
-
+                  // Busqueda de articulos de la orden que tengan observacion
+                  let customrecord_control_inventory_bodySearchObj = search.create({
+                     type: "customrecord_control_inventory_body",
+                     filters: [
+                       ["custrecord_ci_body_parent", "anyof", context.newRecord.id],
+                       "AND",
+                       ["custrecord_ci_body_observation", "noneof", "@NONE@"]
+                     ],
+                     columns: [
+                       "custrecord_ci_body_observation"
+                     ]
+                   });
+                
+                   // Obtener el primer resultado
+                   let searchResult = customrecord_control_inventory_bodySearchObj.run().getRange({
+                       start: 0,
+                       end: 1
+                   });
+                   log.debug('Resultados Busqueda Articulos Observacion', searchResult.length);
+                   // Solo si no existe aunque sea un articulo con observacion entonces se mostrará el boton reabrir lecturas
+                   if (searchResult.length === 0) {
+                        log.debug('Los articulos de la orden no han sido analizados, se habilita boton reabrir lecturas');
+                       if (rolesPermission.openReadOrder.includes(roleID)) {
+                         context.form.addButton({
+                            id: 'custpage_to_open_order',
+                            label: 'Reabrir Lecturas',
+                            functionName: 'makeReadOpen(' + context.newRecord.id + ')'
+                         });
+                      }
+                   } 
+                 
                   break;
                }
                case 'Análisis finalizado': {
-
                   if (rolesPermission.adminsOnly.includes(roleID)) {
                      context.form.addButton({
                         id: 'custpage_to_analisis_order',
@@ -231,13 +298,13 @@ define(['N/redirect', 'N/task', 'N/search', 'N/runtime'], function (redirect, ta
                         functionName: 'makeAnalysisOpen(' + context.newRecord.id + ')'
                      });
                   }
-
+                  
                   context.form.addButton({
                      id: 'custpage_to_upload',
                      label: 'Análisis',
                      functionName: 'createAnalysis(' + context.newRecord.id + ')'
                   });
-
+ 
                   context.form.addButton({
                      id: 'custpage_to_upload',
                      label: 'Motivos de ajuste',
@@ -257,15 +324,14 @@ define(['N/redirect', 'N/task', 'N/search', 'N/runtime'], function (redirect, ta
                      functionName: 'reject(' + context.newRecord.id + ')'
                   });
                   break;
-               }
+               }                
                case 'Aprobada': {
-
                   context.form.addButton({
                      id: 'custpage_acta',
                      label: 'Acta',
                      functionName: 'makeActa(' + context.newRecord.id + ')'
                   });
-
+ 
                   if (rolesPermission.adminsOnly.includes(roleID)) {
                      context.form.addButton({
                         id: 'custpage_make_analysis',
@@ -274,23 +340,46 @@ define(['N/redirect', 'N/task', 'N/search', 'N/runtime'], function (redirect, ta
                      });
                   }
 
+                // Se agrega botón Reabrir Analisis // - DACE
+                  if (rolesPermission.adminsOnly.includes(roleID)) {
+                     context.form.addButton({
+                        id: 'custpage_make_analysis',
+                        label: 'Re-Abrir Análisis',
+                        functionName: 'makeReabrirAnalisis(' + context.newRecord.id + ')'
+                     });
+                  }
+                 // Finaliza cambo botón Reabrir Analisis // - DACE
+ 
                   if (rolesPermission.adminsOnly.includes(roleID)) {
                      context.form.addButton({
                         id: 'custpage_make_analysis',
                         label: 'Invalidar Aprobación',
                         functionName: 'makePendingApproval(' + context.newRecord.id + ')'
                      });
-                     break;
                   }
+                 break;
                }
+                // Se agrego cambio - DACE
+               case 'Rechazada': {
+                // Se agrega cambio botón Reabrir Analisis // - DACE
+                if (rolesPermission.adminsOnly.includes(roleID)) {
+                  context.form.addButton({
+                    id: 'custpage_reject',
+                    label: 'Reabrir-Análisis',
+                    functionName: 'makeRegresarEstado(' + context.newRecord.id + ')'
+                  });
+                  }
+                 break;
+                 // Finaliza cambio botón Reabrir Analisis // - DACE
+               }   
             }
             break;
          }
       }
-
+ 
       if (context.newRecord.getValue('custrecord_control_inventory_status') !== "Cargando Articulos" &&
          'custrecord_control_inventory_status' !== "Rollback Lecturas") {
-
+ 
          context.form.addButton({
             id: 'custpage_global_file',
             label: 'Concentrado de lecturas',
@@ -307,9 +396,9 @@ define(['N/redirect', 'N/task', 'N/search', 'N/runtime'], function (redirect, ta
             functionName: 'print_order(' + context.newRecord.id + ')'
          });
       }
-
+ 
    } //end beforeLoad
-
+ 
    return entry_point;
    /**
     * @param {Object} notification
@@ -329,4 +418,5 @@ define(['N/redirect', 'N/task', 'N/search', 'N/runtime'], function (redirect, ta
             });
          </script>`;
    }
-});
+ });
+ 

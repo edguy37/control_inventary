@@ -68,14 +68,16 @@ define(['N/record', 'N/search', 'N/runtime', './libraries/lib_items'], function 
             //si el articulo esta en la lectura pero no esta en la orden de levantamiento, se agrega
 
             if (!item_line_in_order.hasOwnProperty('lineid')) {
-                add_item_to_order(item.order, items.get_item_by_itemid({
-                    itemid: item.internalid,
-                    orderid: item.order
-                }));
-                item_line_in_order = items.get_items_by_order_detail({
-                    itemid: item.internalid,
-                    orderid: item.order
-                });
+                log.debug('ITEM presente en lectura y ausente en orden de levantamiento', item.internalid);
+
+                let item_by_itemid = items.get_item_by_itemid({itemid: item.internalid, orderid: item.order});
+                // Si la busqueda devuelve un resultado es porque el articulo cumplio con los filtros y se añade a la orden (FIX ERROR: AGREGAR ARTICULOS INACTIVOS GENERABA ERROR)
+                if (item_by_itemid) {
+
+                    add_item_to_order(item.order, item_by_itemid);
+                    item_line_in_order = items.get_items_by_order_detail({itemid: item.internalid, orderid: item.order});
+
+                }
             }
 
             if (item_line_in_order.hasOwnProperty('lineid')) {
@@ -204,7 +206,8 @@ define(['N/record', 'N/search', 'N/runtime', './libraries/lib_items'], function 
 
         let binRecord = items.get_item_on_bin({
             itemId: item.itemid,
-            orderId: item.order
+            orderId: item.order,
+            namefile: item.name
         })
 
         let item_bin
@@ -252,7 +255,7 @@ define(['N/record', 'N/search', 'N/runtime', './libraries/lib_items'], function 
      */
     function add_item_to_order(order, item) {
 
-        log.debug("ITEM ADD", item)
+        log.debug("SE AÑADE UN ARTICULO A LA ORDEN DE LEVANTAMIENTO", item);
 
         const item_detail = record.create({
             type: 'customrecord_control_inventory_body',
