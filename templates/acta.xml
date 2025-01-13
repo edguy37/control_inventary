@@ -22,7 +22,7 @@
 		<tbody>
 			<tr>
 				<td colspan="2" align="center">
-					<strong>ACTA FINAL DE INVENTARIO</strong>
+					<strong>ACTA DE INVENTARIO DE ENTREGA DE DEPARTAMENTO</strong>
 				</td>
 			</tr>			
 		</tbody>
@@ -32,7 +32,7 @@
 		<tbody>			
 			<tr>
 				<td>
-					SIENDO EL ${order.dateActa}, EN LAS OFICINAS DE ${order.subsidiary} UBICADAS EN LA ${order.address_fiscal}, ESTANDO PRESENTES AUDITOR; ${order.audit}, GERENTE DEL AREA; ${order.store}; JEFE DE PISO, ${order.floor}; ENCARGADO, ${order.inCharge}; DE ${order.location} CON DIRECCIÓN DE LA SUCURSAL EN ${order.address_location} SE HACE CONSTAR QUE EN ESTE ACTO RECIBEN A SU ENTERA Y COMPLETA SATISFACCION EL DEPARTAMENTO DE ${order.department} DEL AREA ANTES CITADA, QUEDANDO BAJO SU UNICA Y ESTRICTA RESPONSABILIDAD EL MISMO, EL CUAL CONTIENE LAS PIEZAS Y/O MERCANCIAS LAS CUALES HAN CONTADO Y REVISADO A SU ENTERA Y COMPLETA SATISFACCION, HACIENDO UN TOTAL DE ${order.condensado.total_fisico} PIEZAS INVENTARIADAS CON UN VALOR DE INVENTARIO DE ${order.condensado.valor.total_valor_fisico} SEGÚN RELACIÓN ANEXA.				
+					SIENDO EL ${order.dateActa}, EN LAS OFICINAS DE ${order.subsidiary} UBICADAS EN LA ${order.address_fiscal}, ESTANDO PRESENTES AUDITOR, ${order.audit}; GERENTE DEL AREA, ${order.store}; JEFE DE PISO, ${order.floor}; ENCARGADO, ${order.inCharge}; DE ${order.location} CON DIRECCIÓN DE LA SUCURSAL EN ${order.address_location} SE HACE CONSTAR QUE EN ESTE ACTO RECIBEN A SU ENTERA Y COMPLETA SATISFACCION EL DEPARTAMENTO DE ${order.department} DEL AREA ANTES CITADA, QUEDANDO BAJO SU UNICA Y ESTRICTA RESPONSABILIDAD EL MISMO, EL CUAL CONTIENE LAS PIEZAS Y/O MERCANCIAS LAS CUALES HAN CONTADO Y REVISADO A SU ENTERA Y COMPLETA SATISFACCION, HACIENDO UN TOTAL DE ${order.condensado.total_fisico} PIEZAS INVENTARIADAS CON UN VALOR DE INVENTARIO DE $ ${order.condensado.total_valor_fisico} SEGÚN RELACIÓN ANEXA.				
 				</td>							
 			</tr>			
 			<tr>
@@ -78,10 +78,10 @@
 		</tr>
 		<tr>
 			<td width="50%" align="center">
-				Encargado
+				ENCARGADO
 			</td>
 			<td width="50%" align="center">
-				Jefe de Piso/Tienda/Almacen
+				JEFE DE PISO
 			</td>
 		</tr>
 		<tr style="padding-top: 20px;">
@@ -102,10 +102,10 @@
 		</tr>
 		<tr>
 			<td width="50%" align="center">
-				Auditor
+				AUDITOR
 			</td>
 			<td width="50%" align="center">
-				Gerente de Piso/Tienda/Almacen
+				GERENTE
 			</td>
 		</tr>
 	</table>  
@@ -117,12 +117,7 @@
 		<tbody>
 			<tr>
 				<td colspan="2" align="center">
-					<strong>ANEXO ACTA DE INVENTARIO FÍSICO POR PROVEEDOR</strong>
-				</td>				
-			</tr>
-			<tr>
-				<td colspan="2" align="center">
-					<strong>TIENDAS CHAPUR, S.A. DE C.V</strong>
+					<strong>TIENDAS CHAPUR, S.A. DE C.V.</strong>
 				</td>
 			</tr>
 			<tr>
@@ -146,7 +141,12 @@
 				<td colspan="2" align="center">
 					<strong> ${order.department} </strong>
 				</td>			
-			</tr>			
+			</tr>	
+			<tr>
+				<td colspan="2" align="center">
+					<strong>ANEXO ACTA DE INVENTARIO FÍSICO POR PROVEEDOR</strong>
+				</td>				
+			</tr>		
 		</tbody>
 	</table>
 
@@ -176,12 +176,60 @@
 				<td></td>
 				<td></td>
 				<td></td>
-				<td></td>
+				<td><strong>Total General</strong></td>
 				<td align="center"><strong>${order.condensado.total_fisico}</strong></td>
 				<td align="center"><strong>$ ${order.condensado.total_valor_fisico}</strong></td>				
 			</tr>
 		</tbody>
 	</table>
+
+	<br />
+	
+	<table width="100%">
+		<tr>
+			<td width="50%" align="center">
+				<strong>
+					_________________________________	
+				</strong>
+			</td>
+			<td width="50%" align="center">
+				<strong>
+					_________________________________
+				</strong>
+			</td>
+		</tr>
+		<tr>
+			<td width="50%" align="center">
+				${order.floor}
+			</td>
+			<td width="50%" align="center">
+				${order.store}
+			</td>
+		</tr>
+		<tr>
+			<td width="50%" align="center">
+				Jefe de piso
+			</td>
+			<td width="50%" align="center">
+				Gerente de Tienda
+			</td>
+		</tr>
+		<tr style="padding-top: 20px;">
+			<td width="50%" align="center">
+				_________________________________	
+			</td>
+		</tr>
+		<tr>
+			<td width="50%" align="center">
+				${order.audit}
+			</td>
+		</tr>
+		<tr>
+			<td width="50%" align="center">
+				Auditor
+			</td>
+		</tr>
+	</table> 
 
 </body>
 </pdf>

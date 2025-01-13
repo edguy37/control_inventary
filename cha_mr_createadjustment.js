@@ -30,30 +30,31 @@ define(['N/search', 'N/record', 'N/runtime', './libraries/lib_items'], function 
       filters: [
         ['custrecord_ci_body_parent', 'anyof', orderId],
         'AND',
-        ['custrecord_ci_body_adjusment_reason', 'anyof', [1, 2, 3, 4, 5]],
+        ['custrecord_ci_body_adjusment_reason', 'anyof', [1, 2, 3, 4, 5]], // se incluyen todos
         'AND',
-        ['custrecord_ci_body_observation', 'anyof', [1, 2, 3, 5, 6, 8]]
+        ['custrecord_ci_body_observation', 'anyof', [1, 2, 3, 5, 6, 8]] //se excluye 4	Dif. aclarada sin ajuste, 7	Transferencia errónea, 9. Venta sobrepedido
       ],
       columns: [
-        'custrecord_ci_body_adjusment_reason',
-        'custrecord_ci_body_itemid',
-        'custrecord_ci_body_difference',
-        'custrecord_ci_body_decrease',
-        'custrecord_ci_body_base_price',
-        'custrecord_ci_body_average_cost',
-        'custrecord_ci_body_price_amount',
-        'custrecord_ci_body_observation',
-        'custrecord_ci_body_cost_amount',
-        'custrecord_ci_body_system_amount',
-        'custrecord_ci_body_system_amount_cost',
-        'custrecord_ci_body_in_store_amount',
-        'custrecord_ci_body_in_store'
+        'custrecord_ci_body_adjusment_reason', // motivo de ajuste
+        'custrecord_ci_body_itemid', // id interno del articulo
+        'custrecord_ci_body_difference', // Diferencia
+        'custrecord_ci_body_decrease', // merma check (true, false)
+        'custrecord_ci_body_base_price', // precio
+        'custrecord_ci_body_average_cost', // costo promedio
+        'custrecord_ci_body_price_amount', // importe precio
+        'custrecord_ci_body_observation', // observacion
+        'custrecord_ci_body_cost_amount', // importe costo
+        'custrecord_ci_body_system_amount', // valor sistema
+        'custrecord_ci_body_system_amount_cost', // valor sistema costo
+        'custrecord_ci_body_in_store_amount', // valor fisico
+        'custrecord_ci_body_in_store' // fisico
       ]
     });
   }
   entry_point.map = (context) => {
     const result = JSON.parse(context.value);
     const item_in_order = result.values;
+    log.debug('item_in_order MAP', item_in_order);
     context.write({
       key: item_in_order.custrecord_ci_body_adjusment_reason.text,
       value: {
@@ -73,6 +74,7 @@ define(['N/search', 'N/record', 'N/runtime', './libraries/lib_items'], function 
       },
     });
   } //end map
+  
   entry_point.reduce = (context) => {
 
     try {
@@ -84,10 +86,15 @@ define(['N/search', 'N/record', 'N/runtime', './libraries/lib_items'], function 
       const order = getOrderData(orderId); //datos de cabecera de orden de levantamiento
       const adjustment_reason = context.key; //tipo de motivo ajuste
       const itemsInOrder = context.values; //articulos por motivo de ajuste
+      log.debug('itemsInOrder REDUCE', itemsInOrder);
 
       let adjustCostAmount = 0; //importe costo por articulo para calcular la cantidad a ajustar para merma por motivo de ajuste
       //const bins_by_location = get_bins_by_location(order.location);//se obtiene la lista completa de bins en la ubicación
       let itemErrorAdjustmentArray = [];
+
+      //Para agregar todos los ajustes y no solo el ultimo
+      let generatedAdjustments = []; // Lista para almacenar los idAjustes generados
+
       //se obtienen la relación bin - cantidad del articulo por ubicación segun  NetSuite
       const netsuiteInventoryDetail = get_inventory_detail(itemsInOrder.map(el => {
         const item = JSON.parse(el);
@@ -130,33 +137,59 @@ define(['N/search', 'N/record', 'N/runtime', './libraries/lib_items'], function 
       if (order.memo) inventoryAdjustment.setText({
         fieldId: 'memo',
         text: order.memo
-      }); //CUM 03Nov2021 se agrega memo por error al guardar solo si tiene información.
+      });
+      inventoryAdjustment.setValue({
+        fieldId: 'custbody_cha_order_id',
+        value: orderId
+      });
+      
+       //CUM 03Nov2021 se agrega memo por error al guardar solo si tiene información.
       //se recorren los articulos por motivo de ajuste para poder crear las líneas en el inventory adjustment
-      log.audit('CU 1 - itemsInOrder', itemsInOrder);
+      //log.audit('CU 1 - itemsInOrder', itemsInOrder);
+      log.debug('netsuiteInventoryDetail REDUCE', netsuiteInventoryDetail);
+      log.debug('inventorybalance REDUCE',inventorybalance);
+      log.debug('inStoreInventoryDetail REDUCE',inStoreInventoryDetail);
+
       itemsInOrder.map(el => {
         const item = JSON.parse(el);
-        log.audit('CU 1.1 - netsuiteInventoryDetail', netsuiteInventoryDetail);
+        log.debug('item', item);
+
+        log.debug({
+          title: 'itemsInOrder.map', 
+          details: 'itemid: ' + item.itemid + ', Fisico: ' + item.in_store + ', Diferencia: ' + item.difference
+        });
+
         netsuiteInventoryDetail[item.itemid].map(el => {
-          log.debug('item', item);
+          
           //se obtiene el indice en el arreglo inStoreInventoryDetail donde esta la información del bin que se está recorriedo  
           let binToAdjustIndex = (inStoreInventoryDetail.hasOwnProperty(item.itemid)) ? inStoreInventoryDetail[item.itemid].map(value => value.binnumber).indexOf(el.binnumber) : -1;
+          
+          // inStoreInventoryDetail[item.itemid][binToAdjustIndex].itemcount => cantidad que hay en lectura
+          // el.itemcount => cantidad que hay en netsuite
+          if (binToAdjustIndex > -1) {
+            log.debug({
+              title: 'netsuiteInventoryDetail.map INICIO', 
+              details: 'binnumber: ' + el.binnumber + ', cant lectura: ' + inStoreInventoryDetail[item.itemid][binToAdjustIndex].itemcount + ', cant netsuite: ' + el.itemcount
+            });
+          }
 
           //la cantidad a ajustar debe ser (la cantidad que hay en la lectura - la cantidad que hay en netsuite), 
           //la única consideración es, si binToAdjustIndex es -1 significa que el articulo no aparace en ninguna lectura 
           //por tanto podemos asumir que no hay cantidad física de ese articulo y hay que quitar toda la existencia de netsuite 
 
-
-          log.debug("NETSUITE: " + item.itemid, el.itemcount)
-          log.debug("inStoreInventory: " + item.itemid, inStoreInventoryDetail)
-          log.debug("FISICO " + item.itemid, inStoreInventoryDetail[item.itemid][binToAdjustIndex].itemcount)
+          //log.debug("inStoreInventory: " + item.itemid, inStoreInventoryDetail)
           let toAdjustQuantity = ((binToAdjustIndex > -1) ? inStoreInventoryDetail[item.itemid][binToAdjustIndex].itemcount - el.itemcount : 0 - el.itemcount);
 
           //CUM 03Nov2021 Obtener la cantidad siponible par los casos en que se requiere remover la existencia y evitar errores
           let indexBalanceBin = (inventorybalance.hasOwnProperty(item.itemid)) ? inventorybalance[item.itemid].map(value => value.binnumber).indexOf(el.binnumber) : -1;
-          let quantityInvBalance = inventorybalance.hasOwnProperty(item.itemid) ? inventorybalance[item.itemid][indexBalanceBin].itemcount : 0;
+          let quantityInvBalance = (indexBalanceBin !== -1) ? inventorybalance[item.itemid][indexBalanceBin].itemcount : 0;
 
           let makeAdjustment = quantityInvBalance + toAdjustQuantity < 0 ? false : true;
           if (!makeAdjustment) itemErrorAdjustmentArray.push(item.itemid);
+          log.debug({
+            title: 'netsuiteInventoryDetail.map DESPUES', 
+            details: 'binToAdjustIndex: ' + binToAdjustIndex + ', toAdjustQuantity: ' + toAdjustQuantity + ', indexBalanceBin: ' + indexBalanceBin + ', quantityInvBalance :' + quantityInvBalance + ', makeAdjustment: ' + makeAdjustment
+          });
 
           //si no hay diferencia entre la cantidad en los bins, entonces no es necesario ajustar ese articulo en el bin
           //if (toAdjustQuantity !== 0 && makeAdjustment == true) {
@@ -231,6 +264,11 @@ define(['N/search', 'N/record', 'N/runtime', './libraries/lib_items'], function 
             inventoryAdjustment.commitLine({
               sublistId: 'inventory'
             });
+
+          // Comprobamos si el ajuste ya está registrado
+            const adjustmentId = inventoryAdjustment.save();
+            generatedAdjustments.push(adjustmentId);
+
           }
 
         });
@@ -245,9 +283,23 @@ define(['N/search', 'N/record', 'N/runtime', './libraries/lib_items'], function 
           }
         }
       });
+      
+      // Si se generaron ajustes, actualizamos el campo custrecord_cha_ajustesasociados de la orden
+      if (generatedAdjustments.length > 0) {
+        const adjustmentIds = generatedAdjustments.join(", "); // Unimos los idAjustes con comas
+        record.submitFields({
+          id: orderId,
+          type: 'customrecord_order_control_inventory', // Asegúrate de que el tipo sea 'salesorder' o el tipo correcto
+          values: {
+            'custrecord_cha_ajustesasociados': adjustmentIds
+            }
+        });
+      }
+
 
       //si el ajuste de invetario se puede guardar de manera correcta entonces se hace el recalculo de la merma
-      if (inventoryAdjustment.save()) {
+      if (generatedAdjustments.length > 0) {
+        
         const decrease = get_deacresed({
           location: order.location,
           department: order.department,
@@ -474,17 +526,22 @@ define(['N/search', 'N/record', 'N/runtime', './libraries/lib_items'], function 
         index: i
       });
       searchPage.data.forEach(function (result) {
-        let internalid = result.getValue(internalidColumn)
-        if (!inventory_detail.hasOwnProperty(internalid)) {
-          inventory_detail[internalid] = [{
-            binnumber: Number(result.getValue(binNumberColumn)),
-            itemcount: Number(result.getValue(itemCountColumn))
-          }]
-        } else {
-          inventory_detail[internalid].push({
-            binnumber: Number(result.getValue(binNumberColumn)),
-            itemcount: Number(result.getValue(itemCountColumn))
-          });
+        let internalid = result.getValue(internalidColumn);
+        let binnumber = result.getValue(binNumberColumn);
+
+        // se agrega validacion para evitar que ingresen binnumber "-none-" al realizar la busqueda
+        if(binnumber !== '') {
+          if (!inventory_detail.hasOwnProperty(internalid)) {
+            inventory_detail[internalid] = [{
+              binnumber: Number(result.getValue(binNumberColumn)),
+              itemcount: Number(result.getValue(itemCountColumn))
+            }]
+          } else {
+            inventory_detail[internalid].push({
+              binnumber: Number(result.getValue(binNumberColumn)),
+              itemcount: Number(result.getValue(itemCountColumn))
+            });
+          }
         }
       });
     }
@@ -570,18 +627,29 @@ define(['N/search', 'N/record', 'N/runtime', './libraries/lib_items'], function 
         ['custrecord_ci_itemsbins_item', 'anyof', itemId]
       ],
       columns: [
-        binNumberColumn = 'custrecord_ci_itemsbins_bin',
-        itemCountColumn = 'custrecord_ci_itemsbins_amount',
-        'custrecord_ci_itemsbins_item'
+        internalidItemColumn = search.createColumn({
+          name: "custrecord_ci_itemsbins_item",
+          summary: "GROUP"
+        }),
+        binNumberColumn = search.createColumn({
+            name: "custrecord_ci_itemsbins_bin",
+            summary: "GROUP"
+        }),
+        itemCountColumn = search.createColumn({
+          name: "custrecord_ci_itemsbins_amount",
+          summary: "SUM"
+        })
       ]
     }).run().each((_result) => {
-      if (!inventory_detail.hasOwnProperty(_result.getValue('custrecord_ci_itemsbins_item'))) {
-        inventory_detail[_result.getValue('custrecord_ci_itemsbins_item')] = [{
+        let internalidItem = _result.getValue(internalidItemColumn);
+
+      if (!inventory_detail.hasOwnProperty(internalidItem)) {
+        inventory_detail[internalidItem] = [{
           binnumber: Number(_result.getValue(binNumberColumn)),
           itemcount: Number(_result.getValue(itemCountColumn))
         }]
       } else {
-        inventory_detail[_result.getValue('custrecord_ci_itemsbins_item')].push({
+        inventory_detail[internalidItem].push({
           binnumber: Number(_result.getValue(binNumberColumn)),
           itemcount: Number(_result.getValue(itemCountColumn))
         });
@@ -597,6 +665,7 @@ define(['N/search', 'N/record', 'N/runtime', './libraries/lib_items'], function 
    * @description se obtiene el registro de merma correspondiente
    */
   function get_deacresed(decrease) {
+
     let data_deacresed = {
       internalid: 0,
       executed: 0,
