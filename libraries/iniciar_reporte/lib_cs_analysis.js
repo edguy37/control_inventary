@@ -306,6 +306,11 @@ define(['N/record', 'N/search', 'N/currentRecord', 'N/url', 'N/ui/dialog', 'N/lo
   }
   entry_point.backToOrder = () => {
     //cuando se de clic al botón "volver a la orden", se envia de nuevo al registro de la orden de inventario con el id correspondiente
+    //custpage_to_analisis_order
+    let boton = document.getElementById('custpage_to_analisis_order');
+    console.log('boton', boton);
+
+        
     const _currentRecord = currentRecord.get();
     const urlToRecord = url.resolveRecord({
       recordType: 'customrecord_order_control_inventory',

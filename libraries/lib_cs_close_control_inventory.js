@@ -21,6 +21,8 @@ define(['N/url', 'N/currentRecord', 'N/ui/message', 'N/search', 'N/record', 'N/h
         createGlobalFile: function (context) {},
         toAnalizeAgain: function (context) {},
         makeReadOpen: function (order) {},
+        makeReabrirAnalisis: function (order) {}, // Se agrega la función - DACE
+        makeRegresarEstado: function (order) {}, // Se agrega función - DACE
         print_order: null
     }
 
@@ -32,7 +34,6 @@ define(['N/url', 'N/currentRecord', 'N/ui/message', 'N/search', 'N/record', 'N/h
             showConfirmButton: false,
             allowOutsideClick: false,
             allowEscapeKey: false,
-
         });
 
         try {
@@ -140,7 +141,6 @@ define(['N/url', 'N/currentRecord', 'N/ui/message', 'N/search', 'N/record', 'N/h
         }
     }
     entry_point.toAnalizeAgain = function (orderID) {
-
         record.submitFields({
             type: 'customrecord_order_control_inventory',
             id: orderID,
@@ -148,7 +148,6 @@ define(['N/url', 'N/currentRecord', 'N/ui/message', 'N/search', 'N/record', 'N/h
                 custrecord_control_inventory_status: 'Lecturas cerradas'
             }
         })
-
         window.location.href = url.resolveRecord({
             recordType: 'customrecord_order_control_inventory',
             recordId: orderID,
@@ -291,7 +290,7 @@ define(['N/url', 'N/currentRecord', 'N/ui/message', 'N/search', 'N/record', 'N/h
                     type: 'customrecord_order_control_inventory',
                     id: order,
                     values: {
-                        'custrecord_control_inventory_status': 'Lecturas cerradas'
+                        'custrecord_control_inventory_status': 'Lecturas Cerradas'
                     }
                 });
 
@@ -299,7 +298,33 @@ define(['N/url', 'N/currentRecord', 'N/ui/message', 'N/search', 'N/record', 'N/h
             }
         })
     }
-    entry_point.makePendingApproval = function (order) {
+
+
+  // Se agrega la acción para el botón en el caso de estatus rechazada - Dace 01/2025
+   entry_point.makeRegresarEstado = function (order) {
+
+        Swal.fire({
+            title: '¿Desea regresar al estado anterior: Pendiente aprobación?',
+            showCancelButton: true,
+            confirmButtonText: 'Cambiar',
+        }).then((result) => {
+
+            if (result.isConfirmed) {
+                record.submitFields({
+                    type: 'customrecord_order_control_inventory',
+                    id: order,
+                    values: {
+                        'custrecord_control_inventory_status': 'Pendiente aprobación'
+                    }
+                });
+                window.location.replace(`custrecordentrylist.nl?rectype=1490&id=${order}`);
+            }
+        })
+    }
+
+  // Finaliza el cambio - Dace
+  
+  entry_point.makePendingApproval = function (order) {
 
         Swal.fire({
             title: '¿Desea cambiar el estado a "Análisis finalizado"?',
@@ -372,6 +397,35 @@ define(['N/url', 'N/currentRecord', 'N/ui/message', 'N/search', 'N/record', 'N/h
         }
     }
 
+ // Se agrega DACE - 27/12/2024
+      entry_point.makeReabrirAnalisis = function (order) {
+        const response = https.post({
+            url: url.resolveScript({
+                scriptId: 'customscriptcha_rl_reverseadjustment',
+                deploymentId: 'customdeploy_rl_reverseadjustment_1'
+            }),
+            headers: {
+                'content-type': ' application/json'
+            },
+            body: {
+                order: order,
+            }
+        });
+        const response_body = JSON.parse(response.body);
+        if (response_body.code === 'error') {
+            dialog.create({
+                title: 'Error!',
+                message: response_body.message
+            });
+        } else {
+            window.location.href = url.resolveRecord({
+                recordType: 'customrecord_order_control_inventory',
+                recordId: order,
+            });;
+        }
+    }
+// Finaliza cambio agregado DACE - 27/12/2024
+
     function openSuieletActa(order) {
         const url_suitelet = url.resolveScript({
             scriptId: 'customscript_cha_sl_printacta',
@@ -408,7 +462,7 @@ define(['N/url', 'N/currentRecord', 'N/ui/message', 'N/search', 'N/record', 'N/h
                 })
 
                 Swal.fire({
-                    title: 'Selecciona un empleado, Asignado: ',
+                    title: 'Selecciona un empleado encargado: ',
                     input: 'select',
                     inputOptions: reducedSearch,
                     inputPlaceholder: 'Empleados...',

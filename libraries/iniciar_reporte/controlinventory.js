@@ -173,7 +173,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/record', 'N/encode', '../fields', '.
         //=======================================================================================================
         //se obtiene el campo de filtro de proveedores y se cargan las opciones para filtrar
         const vendor_filter = form.getField({ id: 'custpage_vendor_filter'});
-        getVendorFromOrder(context.order).map(el => vendor_filter.addSelectOption({ value: el, text: el }));
+        getVendorFromOrder(context.order).map(el => vendor_filter.addSelectOption({ value: el.id, text: el.name }));
         //=======================================================================================================
 
         //se agrega la sublista y los campos a la sublista
@@ -477,6 +477,7 @@ define(['N/ui/serverWidget', 'N/search', 'N/record', 'N/encode', '../fields', '.
         }
         return model;
     }
+    /*
     function getVendorFromOrder(orderId) {
         let vendor = [];
         const vendorSearch = search.create({
@@ -497,5 +498,50 @@ define(['N/ui/serverWidget', 'N/search', 'N/record', 'N/encode', '../fields', '.
           });
         }
         return vendor;
+    }*/
+   
+    /**
+   * @param {Number} orderId
+   * @returns {Array} 
+   * @description Se obtienen todos los proveedores según los articulos en la orden de levantamiento
+   */
+  function getVendorFromOrder(orderId) {
+    let vendor = [];
+    const vendorSearch = search.create({
+      type: 'customrecord_control_inventory_body',
+      filters: [
+        'custrecord_ci_body_parent', 'anyof', orderId
+      ],
+      columns: [
+        vendorColumn = search.createColumn({
+          name: 'custrecord_ci_body_vendor',
+          summary: search.Summary.GROUP
+        })
+      ]
+    });
+    const pageData = vendorSearch.runPaged({
+      pageSize: 1000
+    });
+    for (let i = 0; i < pageData.pageRanges.length; i++) {
+      const customrecord_control_inventory_bodySearchPage = pageData.fetch({
+        index: i
+      });
+      customrecord_control_inventory_bodySearchPage.data.forEach(function (result) {
+        let number = parseInt(result.getText(vendorColumn));
+        vendor.push({
+          id: Number(result.getValue(vendorColumn)),
+          name: result.getText(vendorColumn),
+          number: isNaN(number) ? 0 : number
+        });
+      });
     }
+    _number = vendor.map(el => el.number).sort(function (a, b) {
+      return a - b
+    })
+    _vendor = _number.map(el => {
+      let _index = vendor.map(el => el.number).indexOf(el);
+      return vendor[_index];
+    });
+    return _vendor;
+  }
 });

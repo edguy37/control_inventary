@@ -287,7 +287,7 @@ define(['N/search', 'N/file', 'N/log', 'N/record', 'N/query', ], function (searc
   }
   //CONSULTA PARA AGREGAR ARTICULO AL A ORDEN
   entry_point.get_item_by_itemid = (context) => {
-    let item = {}
+    let item = null;
 
     var location = search.lookupFields({
       type: 'customrecord_order_control_inventory',
@@ -308,7 +308,9 @@ define(['N/search', 'N/file', 'N/log', 'N/record', 'N/query', ], function (searc
       filters: [
         ['internalid', 'anyof', context.itemid],
         "AND",
-        ["inventorylocation", "anyof", location.custrecord_control_inventory_location[0].value]
+        ["inventorylocation", "anyof", location.custrecord_control_inventory_location[0].value],
+        "AND",
+        ['isinactive', 'is', false] // se excluye articulos dados de baja
       ],
       columns: [
         'itemid',
@@ -826,7 +828,9 @@ define(['N/search', 'N/file', 'N/log', 'N/record', 'N/query', ], function (searc
       filters: [
         ['custrecord_ci_itemsbins_item', 'anyof', context.itemId],
         'AND',
-        ['custrecord_ci_itemsbins_folio', 'anyof', context.orderId]
+        ['custrecord_ci_itemsbins_folio', 'anyof', context.orderId],
+        'AND',
+        ["custrecord_ci_itemsbins_nombre","is", context.namefile]
       ],
       columns: [
         'custrecord_ci_itemsbins_bin'
@@ -834,6 +838,27 @@ define(['N/search', 'N/file', 'N/log', 'N/record', 'N/query', ], function (searc
     }).run().each(result => {
       item.id = Number(result.id)
       item.bin = result.getValue('custrecord_ci_itemsbins_bin')
+    });
+    return item;
+  }
+  entry_point.get_item_on_binUE = (context) => {
+    let item = {}
+    search.create({
+      type: 'customrecord_cha_ci_item_bin',
+      filters: [
+        ['custrecord_ci_itemsbins_item', 'anyof', context.itemId],
+        'AND',
+        ['custrecord_ci_itemsbins_folio', 'anyof', context.orderId]
+      ],
+      columns: [
+        {name: 'custrecord_ci_itemsbins_bin'},
+        {name: 'id', sort: search.Sort.ASC}, // Ordenar por id en orden ascendente para traer el primero (antiguo)
+        {name: 'custrecord_ci_itemsbins_amount'}
+      ]
+    }).run().each(result => {
+      item.id = Number(result.id)
+      item.bin = result.getValue('custrecord_ci_itemsbins_bin')
+      item.quantity = Number(result.getValue('custrecord_ci_itemsbins_amount'))
     });
     return item;
   }

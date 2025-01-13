@@ -36,11 +36,17 @@ define(['N/error', 'N/record', 'N/runtime', 'N/search', 'N/task'], function (err
         }));
 
         log.debug('PROCESANDO ORDEN DE LEVANTAMIENTO', `${orderID}`);
+        log.debug('orderID',orderID);
+        log.debug('subsidiaryID',subsidiaryID);
+        log.debug('locationID',locationID);
+        log.debug('departmentID',departmentID);
+        log.debug('vendorData',vendorData);
+        log.debug('classID',classID);
 
-        log.audit('departmentID', departmentID);
+
         let arrag = [];
-        log.audit('vendorData',vendorData);
-        log.audit('vendorData2', typeof(vendorData));
+        //log.audit('vendorData',vendorData);
+        //log.audit('vendorData2', typeof(vendorData));
         if(vendorData !== null && vendorData !== " " && vendorData !== undefined){
             var work = vendorData.split(',');
             for(var x = 0; x < work.length; x++){
@@ -73,7 +79,7 @@ define(['N/error', 'N/record', 'N/runtime', 'N/search', 'N/task'], function (err
         if (results.length > 0) {
             location_type = Number(results[0].getValue("locationtype"));
         }
-        log.audit('locationType', location_type);
+        log.debug('locationType', location_type);
 
         if (departmentID != 0)
             filters.push('AND', ['department', 'anyof', departmentID], );
@@ -125,6 +131,11 @@ define(['N/error', 'N/record', 'N/runtime', 'N/search', 'N/task'], function (err
 
             currentPage.data.forEach(function (_result) {
                 let available = 0;
+                log.debug('locationquantityavailable',);
+                log.debug({
+                    title: 'FOREACH currentPage', 
+                    details: '_result.id: ' + _result.id + ', locationquantityavailable: ' + _result.getValue('locationquantityavailable') + ', locationquantitycommitted' + _result.getValue('locationquantitycommitted') + ', locationquantityonhand' + _result.getValue('locationquantityonhand')
+                  });
 
                 if (location_type === 1 || location_type === 4) {
                     available = Number(_result.getValue('locationquantityavailable')) + Number(_result.getValue('locationquantitycommitted'));

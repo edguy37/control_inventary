@@ -14,7 +14,7 @@ define(
 
     entry_point.post = function (context) {
       if (file_in_folder(context.file.folder, context.file.name)) {
-        return { code: 'error', message: 'Ya existe un archivo con ese nombre, no se ha cargado ' + context.file.name + ' para evitar duplicarlo!' };
+        return { code: 'error', message: 'Ya existe un archivo con ese nombre, no se ha cargado ' + context.file.name + ' para evitar duplicarlo!'};
       }
 
       try {
@@ -99,3 +99,4 @@ define(
       return file_uploaded;
     }
   });
+  

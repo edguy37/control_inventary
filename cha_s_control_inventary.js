@@ -19,6 +19,12 @@ define(['N/redirect', 'N/record', 'N/task', './libraries/iniciar_reporte/control
 
         switch (method) {
             case 'GET': {
+                
+                log.debug('context.request.parameters',context.request.parameters); 
+                log.debug('context.request.parameters.action', context.request.parameters.action); 
+                log.debug('context.request.parameters.data', context.request.parameters.data);
+                log.debug('context.request.parameters.order', context.request.parameters.order);
+                
                 switch (parameters.action) {
                     case 'previousOrder': {
                         form = iniciarReporte.create_empty({
